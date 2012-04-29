@@ -1,0 +1,361 @@
+Sub ImportPupilData()
+'
+' ImportPupilData Macro
+' Macro created 3/23/2010 by Richard Wood
+'
+
+'
+
+Dim WorkbookName1 As String
+
+Dim CurrentCellContents, CurrentCellLength As String
+
+Dim CopyRow, InputRow As String
+
+Dim ProfileNormal, TheTime, DeviceID, RecordID, SubjectID, EyeMeasured, PulseIntensity, DCIntensity, PulseStartTime, PulseDuration, MeasurementDuration, DiameterMean, DiameterStdDev As String
+Dim DiameterInit, DiameterEnd, PercentChange, CLat, MeanCVel, MaxCVel, SeventyFiveRecTime, DilationVel As String
+
+
+'Let the user choose the file to open
+OpenExcelFile
+WorkbookName1 = ActiveWorkbook.Name
+
+
+Windows(WorkbookName1).Activate
+
+Range("A1").Activate
+
+Do
+
+'Determine whether the next block is PLR or Digit Span
+
+        ActiveCell.Offset(10, 0).Select
+
+'If next block is Digit Span...
+
+If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
+
+    'Activate Digit Span sheet, find the next empty row, and set as input row.
+        Windows("Grouped Pupillometry Data.xlsm").Activate
+        Sheets("Digit Span").Select
+        Range("A1").Select
+        Selection.End(xlDown).Select
+        InputRow = ActiveCell.Row + 1
+
+    'Copy "Profile Number" number
+
+        Windows(WorkbookName1).Activate
+
+            Selection.End(xlUp).Select
+                CurrentCellContents = ActiveCell.Text
+                ProfileNormal = Right(CurrentCellContents, 1)
+
+    'Copy "Time"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            TheTime = Right(CurrentCellContents, 8)
+
+    'Copy "Device ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DeviceID = Right(CurrentCellContents, 7)
+
+    'Copy "Record ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            RecordID = Right(CurrentCellContents, (CurrentCellLength - 12))
+
+    'Copy "Subject ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            SubjectID = Right(CurrentCellContents, (CurrentCellLength - 13))
+
+    'Copy "Eye Measured"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            EyeMeasured = Right(CurrentCellContents, (CurrentCellLength - 15))
+
+    'Copy "Pulse Intensity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseIntensity = Mid(CurrentCellContents, 19, 2)
+
+    'Copy "DC Intensity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DCIntensity = Mid(CurrentCellContents, 16, 2)
+
+    'Copy "Pulse Start Time"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseStartTime = Mid(CurrentCellContents, 20, 5)
+
+    'Copy "Pulse Duration"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseDuration = Mid(CurrentCellContents, 18, 5)
+
+    'Copy "Measurement Duration"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            MeasurementDuration = Mid(CurrentCellContents, 24, 6)
+
+    'Copy "Diameter Mean" and "Diamater Standard Deviation"
+
+        ActiveCell.Offset(7, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DiameterMean = Mid(CurrentCellContents, 12, 3)
+            DiameterStdDev = Mid(CurrentCellContents, 19, 4)
+
+    'Paste Data into Digit Span sheet.
+
+    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Range("A" + InputRow) = SubjectID
+    Range("B" + InputRow) = TheTime
+    Range("D" + InputRow) = ProfileNormal
+    Range("E" + InputRow) = DeviceID
+    Range("F" + InputRow) = RecordID
+    Range("G" + InputRow) = EyeMeasured
+    Range("H" + InputRow) = PulseIntensity
+    Range("I" + InputRow) = DCIntensity
+    Range("J" + InputRow) = PulseStartTime
+    Range("K" + InputRow) = PulseDuration
+    Range("L" + InputRow) = MeasurementDuration
+    Range("M" + InputRow) = DiameterMean
+    Range("N" + InputRow) = DiameterStdDev
+
+
+    'Copy and Paste Data Points
+
+    Windows(WorkbookName1).Activate
+
+        ActiveCell.Offset(-1, 0).Select
+        CopyRow = ActiveCell.Row
+        Range("A" & CopyRow & ":QH" & CopyRow).Select
+        Selection.Copy
+
+    Windows("Grouped Pupillometry Data.xlsm").Activate
+
+        Range("O" + InputRow).Select
+        ActiveSheet.Paste
+
+    'Move to next block
+
+    Windows(WorkbookName1).Activate
+        ActiveCell.Offset(4, 0).Select
+
+End If
+
+
+
+
+
+'If next block is PLR...
+
+If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
+
+
+    'Activate PLR sheet, find the next empty row, and set as input row.
+        Windows("Grouped Pupillometry Data.xlsm").Activate
+        Sheets("PLR").Select
+        Range("A65536").Select
+        Selection.End(xlUp).Select
+        InputRow = ActiveCell.Row + 1
+
+
+    'Copy "Profile Number" number
+
+        Windows(WorkbookName1).Activate
+
+            Selection.End(xlUp).Select
+                CurrentCellContents = ActiveCell.Text
+                ProfileNormal = Right(CurrentCellContents, 1)
+    
+    'Copy "Time"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            TheTime = Right(CurrentCellContents, 8)
+
+    'Copy "Device ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DeviceID = Right(CurrentCellContents, 7)
+
+    'Copy "Record ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            RecordID = Right(CurrentCellContents, (CurrentCellLength - 12))
+
+    'Copy "Subject ID"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            SubjectID = Right(CurrentCellContents, (CurrentCellLength - 13))
+
+    'Copy "Eye Measured"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            EyeMeasured = Right(CurrentCellContents, (CurrentCellLength - 15))
+
+    'Copy "Pulse Intensity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseIntensity = Mid(CurrentCellContents, 19, 2)
+
+    'Copy "DC Intensity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DCIntensity = Mid(CurrentCellContents, 16, 1)
+
+    'Copy "Pulse Start Time"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseStartTime = Mid(CurrentCellContents, 20, 5)
+
+    'Copy "Pulse Duration"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            PulseDuration = Mid(CurrentCellContents, 18, 5)
+
+    'Copy "Measurement Duration"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            MeasurementDuration = Mid(CurrentCellContents, 24, 5)
+
+    'Copy "Diameter Initial", "Diamater End", and "Percent Change"
+
+        ActiveCell.Offset(7, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DiameterInit = Mid(CurrentCellContents, 12, 3)
+            DiameterEnd = Mid(CurrentCellContents, 18, 3)
+            'PercentChange = Mid(CurrentCellContents, 25, 3)
+            CurrentCellContents = Right(CurrentCellContents, Len(CurrentCellContents) - InStr(1, CurrentCellContents, "("))
+            PercentChange = Left(CurrentCellContents, Len(CurrentCellContents) - 2)
+
+    'Copy "C. Lat"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellContents = Right(CurrentCellContents, Len(CurrentCellContents) - 9)
+            CLat = Left(CurrentCellContents, InStr(1, CurrentCellContents, "ms") - 1)
+
+    'Copy "Mean C. Velocity" and "Max C. Velocity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            CurrentCellContents = Right(CurrentCellContents, CurrentCellLength - 18)
+            MeanCVel = Left(CurrentCellContents, 5)
+                If Right(MeanCVel, 1) = "/" Then MeanCVel = Left(MeanCVel, 4)
+            MaxCVel = Right(CurrentCellContents, Len(CurrentCellContents) - Len(MeanCVel) - 1)
+            MaxCVel = Left(MaxCVel, Len(MaxCVel) - 4)
+
+    'Copy "75% Rec Time"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            CurrentCellLength = Len(ActiveCell)
+            SeventyFiveRecTime = Mid(CurrentCellContents, 21, CurrentCellLength - 20)
+            CurrentCellLength = Len(SeventyFiveRecTime)
+            SeventyFiveRecTime = Left(SeventyFiveRecTime, CurrentCellLength - 1)
+
+    'Copy "Dilation Velocity"
+
+        ActiveCell.Offset(1, 0).Select
+            CurrentCellContents = ActiveCell.Text
+            DilationVel = Mid(CurrentCellContents, 21, 4)
+
+    'Paste Data into PLR sheet.
+
+    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Range("A" + InputRow) = SubjectID
+    Range("B" + InputRow) = TheTime
+    Range("D" + InputRow) = ProfileNormal
+    Range("E" + InputRow) = DeviceID
+    Range("F" + InputRow) = RecordID
+    Range("G" + InputRow) = EyeMeasured
+    Range("H" + InputRow) = PulseIntensity
+    Range("I" + InputRow) = DCIntensity
+    Range("J" + InputRow) = PulseStartTime
+    Range("K" + InputRow) = PulseDuration
+    Range("L" + InputRow) = MeasurementDuration
+    Range("M" + InputRow) = DiameterInit
+    Range("N" + InputRow) = DiameterEnd
+    Range("O" + InputRow) = PercentChange
+    Range("P" + InputRow) = CLat
+    Range("Q" + InputRow) = MeanCVel
+    Range("R" + InputRow) = MaxCVel
+    Range("S" + InputRow) = SeventyFiveRecTime
+    Range("T" + InputRow) = DilationVel
+
+
+    'Copy and Paste Data Points
+
+    Windows(WorkbookName1).Activate
+
+        ActiveCell.Offset(-5, 0).Select
+        CopyRow = ActiveCell.Row
+        Range("A" & CopyRow & ":ET" & CopyRow).Select
+        Selection.Copy
+
+    Windows("Grouped Pupillometry Data.xlsm").Activate
+
+        Range("U" + InputRow).Select
+        ActiveSheet.Paste
+
+    'Move to next block
+
+    Windows(WorkbookName1).Activate
+        ActiveCell.Offset(8, 0).Select
+
+End If
+
+
+Loop Until IsEmpty(ActiveCell)
+
+ActiveWorkbook.Close
+
+End Sub
+
+Private Sub OpenExcelFile()
+
+    Dim vFile As Variant
+
+    'Showing Excel Open Dialog Form
+    vFile = Application.GetOpenFilename("Excel Files (*.txt)," & _
+    "*.txt", 1, "Select Excel File", "Open", False)
+
+    'If Cancel then exit
+    If TypeName(vFile) = "Boolean" Then
+        Exit Sub
+    End If
+
+    'Open selected file
+    Workbooks.Open vFile
+
+End Sub

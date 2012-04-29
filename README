@@ -1,0 +1,12 @@
+VETSA's pupilometer exports data in a block format, making it impossible to analyze with standard
+statistical programs (SAS, etc.)
+
+This VBA macro asks the user to specify a file containing raw pupilometry data, parses through the 
+the file, determines whether each block is for the Pupil Light Reflex (PLR) or Digit Span test, 
+and adds the necessary information into the appropiate worksheet.
+
+To run, paste the code into an Excel Module (I always use Module 1, but it doesn't matter), and it 
+will show up in the View->Macros window.
+
+Assumes that the workbook containing the macro has worksheets named "PLR" and "Digit Span",
+and that these worksheets have a header row already in place.
