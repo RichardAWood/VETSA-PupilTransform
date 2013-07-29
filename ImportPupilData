@@ -1,10 +1,41 @@
+Dim MacroWorksheetName As String
+
 Sub ImportPupilData()
+
 '
 ' ImportPupilData Macro
 ' Macro created 3/23/2010 by Richard Wood
 '
+' 1/23/2013 Richard Wood - Updated to allow user to choose multiple files at once. Also grabs current filename, instead of having it hard coded.
+' 28JUL2013 Richard Wood: inconsistent data rows found for some BU files, so updated to handle these.
 
 '
+
+    Dim fd As FileDialog
+    Dim FileChosen As Integer
+    Dim FileName As String
+    Dim i As Integer
+    
+    MacroWorksheetName = ActiveWorkbook.Name
+    
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+    fd.InitialView = msoFileDialogViewList
+    'allow multiple file selection
+    fd.AllowMultiSelect = True
+    
+    FileChosen = fd.Show
+    If FileChosen = -1 Then
+        'pass each of the files chosen into the Pupil Data Sorter
+        For i = 1 To fd.SelectedItems.Count
+            FileName = fd.SelectedItems(i)
+            SortPupilDataPart2 (FileName)
+        Next i
+    End If
+
+End Sub
+
+Sub SortPupilDataPart2(PupilTextFile As String)
+
 
 Dim WorkbookName1 As String
 
@@ -16,8 +47,7 @@ Dim ProfileNormal, TheTime, DeviceID, RecordID, SubjectID, EyeMeasured, PulseInt
 Dim DiameterInit, DiameterEnd, PercentChange, CLat, MeanCVel, MaxCVel, SeventyFiveRecTime, DilationVel As String
 
 
-'Let the user choose the file to open
-OpenExcelFile
+Workbooks.Open PupilTextFile
 WorkbookName1 = ActiveWorkbook.Name
 
 
@@ -30,16 +60,22 @@ Do
 'Determine whether the next block is PLR or Digit Span
 
         ActiveCell.Offset(10, 0).Select
+        
+'28JUL2013 RWood - for the inconsistent BU files, go one row further down.
+
+If (StrComp(Left(ActiveCell.Text, 14), "Pulse Duration")) = 0 Then
+   ActiveCell.Offset(1, 0).Select
+End If
 
 'If next block is Digit Span...
 
 If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
 
     'Activate Digit Span sheet, find the next empty row, and set as input row.
-        Windows("Grouped Pupillometry Data.xlsm").Activate
+        Windows(MacroWorksheetName).Activate
         Sheets("Digit Span").Select
-        Range("A1").Select
-        Selection.End(xlDown).Select
+        Range("A65536").Select
+        Selection.End(xlUp).Select
         InputRow = ActiveCell.Row + 1
 
     'Copy "Profile Number" number
@@ -83,6 +119,11 @@ If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
             CurrentCellLength = Len(ActiveCell)
             EyeMeasured = Right(CurrentCellContents, (CurrentCellLength - 15))
 
+    'RWood 28JUL2013 - some files have an extra row between Eye Measured and Pulse Intensity called "Finite Measurement Duration" - check for it, and skip it if found.
+            If (StrComp(Left(ActiveCell.Offset(1, 0).Text, 6), "Finite")) = 0 Then
+               ActiveCell.Offset(1, 0).Select
+            End If
+
     'Copy "Pulse Intensity"
 
         ActiveCell.Offset(1, 0).Select
@@ -113,6 +154,13 @@ If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
             CurrentCellContents = ActiveCell.Text
             MeasurementDuration = Mid(CurrentCellContents, 24, 6)
 
+
+    'RWood 28JUL2013 - some files have an extra 2 rows between Measurement Duration and Time Profile called "Frames Tracked" - check for it, and skip it if found.
+            If (StrComp(Left(ActiveCell.Offset(1, 0).Text, 6), "Frames")) = 0 Then
+               ActiveCell.Offset(2, 0).Select
+            End If
+
+
     'Copy "Diameter Mean" and "Diamater Standard Deviation"
 
         ActiveCell.Offset(7, 0).Select
@@ -122,7 +170,7 @@ If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
 
     'Paste Data into Digit Span sheet.
 
-    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Windows(MacroWorksheetName).Activate
     Range("A" + InputRow) = SubjectID
     Range("B" + InputRow) = TheTime
     Range("D" + InputRow) = ProfileNormal
@@ -147,7 +195,7 @@ If ActiveCell.Text = "Measurement Duration = 15.000sec" Then
         Range("A" & CopyRow & ":QH" & CopyRow).Select
         Selection.Copy
 
-    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Windows(MacroWorksheetName).Activate
 
         Range("O" + InputRow).Select
         ActiveSheet.Paste
@@ -169,7 +217,7 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
 
 
     'Activate PLR sheet, find the next empty row, and set as input row.
-        Windows("Grouped Pupillometry Data.xlsm").Activate
+        Windows(MacroWorksheetName).Activate
         Sheets("PLR").Select
         Range("A65536").Select
         Selection.End(xlUp).Select
@@ -217,6 +265,11 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
             CurrentCellLength = Len(ActiveCell)
             EyeMeasured = Right(CurrentCellContents, (CurrentCellLength - 15))
 
+    'RWood 28JUL2013 - some files have an extra row between Eye Measured and Pulse Intensity called "Finite Measurement Duration" - check for it, and skip it if found.
+            If (StrComp(Left(ActiveCell.Offset(1, 0).Text, 6), "Finite")) = 0 Then
+               ActiveCell.Offset(1, 0).Select
+            End If
+
     'Copy "Pulse Intensity"
 
         ActiveCell.Offset(1, 0).Select
@@ -247,6 +300,12 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
             CurrentCellContents = ActiveCell.Text
             MeasurementDuration = Mid(CurrentCellContents, 24, 5)
 
+    'RWood 28JUL2013 - some files have an extra 2 rows between Measurement Duration and Time Profile called "Frames Tracked" - check for it, and skip it if found.
+            If (StrComp(Left(ActiveCell.Offset(1, 0).Text, 6), "Frames")) = 0 Then
+               ActiveCell.Offset(2, 0).Select
+            End If
+
+
     'Copy "Diameter Initial", "Diamater End", and "Percent Change"
 
         ActiveCell.Offset(7, 0).Select
@@ -257,11 +316,12 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
             CurrentCellContents = Right(CurrentCellContents, Len(CurrentCellContents) - InStr(1, CurrentCellContents, "("))
             PercentChange = Left(CurrentCellContents, Len(CurrentCellContents) - 2)
 
-    'Copy "C. Lat"
+    'Copy "Lat" / "C. Lat"
+    '28JUL2013 RWood - Some rows start with "C. Lat", and others with "Lat" - updated "Right" parameters to handle this.
 
         ActiveCell.Offset(1, 0).Select
             CurrentCellContents = ActiveCell.Text
-            CurrentCellContents = Right(CurrentCellContents, Len(CurrentCellContents) - 9)
+            CurrentCellContents = Right(CurrentCellContents, Len(CurrentCellContents) - (InStr(1, CurrentCellContents, "ms") - 4))
             CLat = Left(CurrentCellContents, InStr(1, CurrentCellContents, "ms") - 1)
 
     'Copy "Mean C. Velocity" and "Max C. Velocity"
@@ -292,7 +352,7 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
 
     'Paste Data into PLR sheet.
 
-    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Windows(MacroWorksheetName).Activate
     Range("A" + InputRow) = SubjectID
     Range("B" + InputRow) = TheTime
     Range("D" + InputRow) = ProfileNormal
@@ -323,7 +383,7 @@ If ActiveCell.Text = "Measurement Duration = 5.000sec" Then
         Range("A" & CopyRow & ":ET" & CopyRow).Select
         Selection.Copy
 
-    Windows("Grouped Pupillometry Data.xlsm").Activate
+    Windows(MacroWorksheetName).Activate
 
         Range("U" + InputRow).Select
         ActiveSheet.Paste
@@ -338,24 +398,7 @@ End If
 
 Loop Until IsEmpty(ActiveCell)
 
+Application.CutCopyMode = False
 ActiveWorkbook.Close
-
-End Sub
-
-Private Sub OpenExcelFile()
-
-    Dim vFile As Variant
-
-    'Showing Excel Open Dialog Form
-    vFile = Application.GetOpenFilename("Excel Files (*.txt)," & _
-    "*.txt", 1, "Select Excel File", "Open", False)
-
-    'If Cancel then exit
-    If TypeName(vFile) = "Boolean" Then
-        Exit Sub
-    End If
-
-    'Open selected file
-    Workbooks.Open vFile
 
 End Sub
